@@ -10,6 +10,7 @@ import (
     "google.golang.org/api/option"
 
     "github.com/gin-gonic/gin"
+    "github.com/gin-contrib/cors" // Import middleware CORS
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
         port = "3000"
     }
 
-    opt := option.WithCredentialsFile("starstec-2cf73-firebase-adminsdk-p5slh-58ab5b2048.json") // Sesuaikan dengan path ke serviceAccountKey Anda
+    opt := option.WithCredentialsFile("starstec-2cf73-firebase-adminsdk-p5slh-58ab5b2048.json")
     config := &firebase.Config{DatabaseURL: "https://starstec-2cf73-default-rtdb.firebaseio.com"}
     app, err := firebase.NewApp(context.Background(), config, opt)
     if err != nil {
@@ -31,6 +32,12 @@ func main() {
         log.Fatalf("Error initializing Firestore client: %v", err)
     }
     defer client.Close()
+
+    // Middleware CORS
+    configCORS := cors.DefaultConfig()
+    configCORS.AllowOrigins = []string{"*"} // Sesuaikan ini dengan domain Anda jika perlu
+    configCORS.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+    r.Use(cors.New(configCORS))
 
     // Endpoint untuk mendapatkan semua data campaign
     r.GET("/api/campaigns", func(c *gin.Context) {
