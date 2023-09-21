@@ -10,7 +10,7 @@ import (
     "google.golang.org/api/option"
 
     "github.com/gin-gonic/gin"
-    "github.com/gin-contrib/cors" // Import middleware CORS
+    "github.com/gin-contrib/cors"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 
     // Middleware CORS
     configCORS := cors.DefaultConfig()
-    configCORS.AllowOrigins = []string{"*"} // Sesuaikan ini dengan domain Anda jika perlu
+    configCORS.AllowOrigins = []string{"*"}
     configCORS.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
     r.Use(cors.New(configCORS))
 
@@ -57,6 +57,7 @@ func main() {
                 "title":       campaignData["Title"],
                 "description": campaignData["Description"],
                 "date":        campaignData["Date"],
+                "image":       campaignData["image"], // Menambahkan field "image" yang berbentuk string
             }
             campaigns = append(campaigns, campaign)
         }
@@ -79,7 +80,13 @@ func main() {
         }
 
         campaignData := campaignDoc.Data()
-        c.JSON(http.StatusOK, campaignData)
+        c.JSON(http.StatusOK, gin.H{
+            "id":          campaignId,
+            "title":       campaignData["Title"],
+            "description": campaignData["Description"],
+            "date":        campaignData["Date"],
+            "image":       campaignData["image"], // Menambahkan field "image" yang berbentuk string
+        })
     })
 
     serverAddr := ":" + port
