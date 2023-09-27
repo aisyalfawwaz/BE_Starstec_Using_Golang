@@ -39,7 +39,7 @@ func main() {
     configCORS.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
     r.Use(cors.New(configCORS))
 
-    // Endpoint untuk mendapatkan semua data campaign
+    // Endpoint untuk mendapatkan semua data campaign dalam bentuk array JSON
     r.GET("/api/campaigns", func(c *gin.Context) {
         ctx := context.Background()
         campaignRef := client.Collection("campaign")
@@ -49,23 +49,23 @@ func main() {
             return
         }
 
-        var campaigns []map[string]interface{}
+        var campaigns []gin.H
         for _, doc := range docs {
             campaignData := doc.Data()
-            campaign := map[string]interface{}{
+            campaign := gin.H{
                 "id":          doc.Ref.ID,
                 "title":       campaignData["Title"],
                 "description": campaignData["Description"],
                 "date":        campaignData["Date"],
-                "image":       campaignData["image"], // Menambahkan field "image" yang berbentuk string
+                "image":       campaignData["image"].(string), // Mengonversi ke string jika diperlukan
             }
             campaigns = append(campaigns, campaign)
         }
 
-        c.JSON(http.StatusOK, gin.H{"campaigns": campaigns})
+        c.JSON(http.StatusOK, campaigns)
     })
 
-    // Endpoint untuk mendapatkan data campaign berdasarkan ID
+    // Endpoint untuk mendapatkan data campaign berdasarkan ID dalam bentuk objek JSON
     r.GET("/api/campaign/:campaignId", func(c *gin.Context) {
         campaignId := c.Param("campaignId")
 
@@ -80,13 +80,15 @@ func main() {
         }
 
         campaignData := campaignDoc.Data()
-        c.JSON(http.StatusOK, gin.H{
+        campaign := gin.H{
             "id":          campaignId,
             "title":       campaignData["Title"],
             "description": campaignData["Description"],
             "date":        campaignData["Date"],
-            "image":       campaignData["image"], // Menambahkan field "image" yang berbentuk string
-        })
+            "image":       campaignData["image"].(string), // Mengonversi ke string jika diperlukan
+        }
+
+        c.JSON(http.StatusOK, campaign)
     })
 
     serverAddr := ":" + port
